@@ -10,17 +10,25 @@
   padding-left: 17px;
   border-bottom: 1px solid lightgray;
   object-fit: contain;
+  display: flex;
+  justify-content: space-between;
 }
 .app__header > img {
   height: 56px;
   width: 56px;
+  object-fit: contain;
 }
-.app__signup{
+.app__signup {
   display: flex;
   flex-direction: column;
 }
 
-.app__headerImage{
+.app__headerImage {
   height: 56px;
   width: 56px;
+}
+.app__posts {
+  padding: 20px;
+  display: flex;
+  justify-content: center;
 }

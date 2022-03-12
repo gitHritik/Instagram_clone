@@ -7,10 +7,10 @@ import { useState, useEffect } from "react";
 import { auth, db } from "./firebase";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import { Input } from "@mui/material";
-// import { Unsubscribe } from "@mui/icons-material";
+import ImageUpload from "./component/ImageUpload";
+import InstagramEmbed from "react-instagram-embed";
 
 const style = {
   position: "absolute",
@@ -27,6 +27,7 @@ const style = {
 function App() {
   const [posts, setPosts] = useState([]);
   const [open, setOpen] = useState(false);
+  const [openSignIn, setOpenSignIn] = useState(false);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -52,15 +53,17 @@ function App() {
   //useEffect runs when a specific code run it reacts and only the page is get referesed
   useEffect(() => {
     //Here is the piece of code
-    db.collection("posts").onSnapshot((snapshot) => {
-      //Every time the new post fired the code run
-      setPosts(
-        snapshot.docs.map((doc) => ({
-          id: doc.id,
-          post: doc.data(),
-        }))
-      );
-    });
+    db.collection("posts")
+      .orderBy("timestamp", "desc")
+      .onSnapshot((snapshot) => {
+        //Every time the new post fired the code run
+        setPosts(
+          snapshot.docs.map((doc) => ({
+            id: doc.id,
+            post: doc.data(),
+          }))
+        );
+      });
   }, []);
   const signUp = (event) => {
     event.preventDefault();
@@ -72,9 +75,20 @@ function App() {
         });
       })
       .catch((error) => alert(error.message));
+    setOpen(false);
+  };
+
+  const signIn = (event) => {
+    event.preventDefault();
+    auth
+      .signInWithEmailAndPassword(email, password)
+      .catch((error) => alert(error.message));
+
+    setOpenSignIn(false);
   };
   return (
     <div className="App">
+      {/* //Sign up model */}
       <Modal open={open} onClose={() => setOpen(false)}>
         <Box sx={style}>
           <form className="app__signup">
@@ -105,28 +119,76 @@ function App() {
           </form>
         </Box>
       </Modal>
-
+      {/* //Sign In model */}
+      <Modal open={openSignIn} onClose={() => setOpenSignIn(false)}>
+        <Box sx={style}>
+          <form className="app__signup">
+            <center>
+              <img className="app__headerImage" src={logo} alt="" />
+            </center>
+            <Input
+              type="email"
+              placeholder="Enter your Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <Input
+              type="password"
+              placeholder="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <Button type="submit" onClick={signIn}>
+              Sign In
+            </Button>
+          </form>
+        </Box>
+      </Modal>
       <div className="app__header">
         {/* header */}
         <img src={logo} alt="" />
+        {user ? (
+          <Button onClick={() => auth.signOut()}>Logout</Button>
+        ) : (
+          <div className="app__loginContainer">
+            <Button onClick={() => setOpenSignIn(true)}>Sign In</Button>
+            <Button onClick={() => setOpen(true)}>Sign up</Button>
+          </div>
+        )}
       </div>
-      {user ? (
-        <Button onClick={() => auth.signOut()}>Logout</Button>
+      <div className="app__posts">
+        <div className="app__postsLeft">
+          {posts.map(({ id, post }) => (
+            <Post
+              key={id}
+              username={post.username}
+              caption={post.caption}
+              imageUrl={post.imageUrl}
+            />
+          ))}
+        </div>
+        <div className="app__postsRight">
+          <InstagramEmbed
+            url="https://images.unsplash.com/photo-1647096569866-7f319f3d009d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=424&q=80"
+            maxWidth={320}
+            hideCaption={false}
+            containerTagName="div"
+            protocol=""
+            injectScript
+            onLoading={() => {}}
+            onSuccess={() => {}}
+            onAfterRender={() => {}}
+            onFailure={() => {}}
+          />
+        </div>
+      </div>
+
+      {/* Imgeuploader */}
+      {user?.displayName ? (
+        <ImageUpload username={user.displayName} />
       ) : (
-        <Button onClick={() => setOpen(true)}>Sign up</Button>
+        <h3>Sorry you need to login to upload</h3>
       )}
-      <h1>Welocme</h1>
-      {posts.map(({ id, post }) => (
-        <Post
-          key={id}
-          username={post.username}
-          caption={post.caption}
-          imageUrl={post.imageUrl}
-        />
-      ))}
-      {/* <Post imageUrl={p1} username="Hritik" caption="Love Your guys" />
-      <Post imageUrl={p2} username="Prateek" caption="Nothing man" />
-      <Post imageUrl={p1} username="Beliver" caption="Hate you guys" /> */}
     </div>
   );
 }
