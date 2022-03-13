@@ -161,6 +161,8 @@ function App() {
           {posts.map(({ id, post }) => (
             <Post
               key={id}
+              postId={id}
+              user={user}
               username={post.username}
               caption={post.caption}
               imageUrl={post.imageUrl}
@@ -169,7 +171,8 @@ function App() {
         </div>
         <div className="app__postsRight">
           <InstagramEmbed
-            url="https://images.unsplash.com/photo-1647096569866-7f319f3d009d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=424&q=80"
+            url="https://instagr.am/p/Zw9o4/"
+            clientAccessToken="123|456"
             maxWidth={320}
             hideCaption={false}
             containerTagName="div"
